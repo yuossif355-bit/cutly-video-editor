@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cutly | محرر فيديو من المتصفح</title>
+  <meta name="description" content="محرر فيديو عربي يشتغل في المتصفح: قص وتقسيم، نصوص، فلاتر، سرعة، صوت، وتصدير. من غير تسجيل ومن غير رفع ملفاتك لأي سيرفر.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700&family=Tajawal:wght@500;700&family=Amiri:wght@400;700&family=Lalezar&family=Reem+Kufi:wght@500;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- الشريط العلوي -->
+  <header class="topbar">
+    <div class="brand">✂️ Cutly</div>
+    <div class="top-actions">
+      <button id="undoBtn" class="ibtn" title="تراجع (Ctrl+Z)" disabled>↶</button>
+      <button id="redoBtn" class="ibtn" title="إعادة (Ctrl+Shift+Z)" disabled>↷</button>
+      <select id="aspectSel" title="أبعاد الفيديو" aria-label="أبعاد الفيديو">
+        <option value="16:9">16:9 — يوتيوب</option>
+        <option value="9:16">9:16 — ريلز / تيك توك</option>
+        <option value="1:1">1:1 — مربع</option>
+        <option value="4:5">4:5 — انستجرام</option>
+      </select>
+      <button id="exportBtn" class="primary">⬇ تصدير</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- المكتبة -->
+    <aside class="panel library">
+      <div class="tabs">
+        <button class="tab active" data-tab="media">الوسائط</button>
+        <button class="tab" data-tab="text">نص</button>
+        <button class="tab" data-tab="ready">جاهز</button>
+      </div>
+
+      <section class="tabpane" data-pane="media">
+        <button id="importBtn" class="dashed">＋ استيراد فيديو / صورة / صوت</button>
+        <input id="fileInput" type="file" accept="video/*,image/*,audio/*" multiple hidden>
+        <p class="muted small">أو اسحب الملفات وارميها في أي مكان في الصفحة. الملفات بتفضل على جهازك ومبتترفعش لأي حتة.</p>
+        <div id="mediaList" class="media-list"></div>
+      </section>
+
+      <section class="tabpane" data-pane="text" hidden>
+        <p class="muted small">دوس على نمط عشان يتضاف عند مؤشر التشغيل، وبعدين عدّل عليه من اللوحة اللي على اليمين.</p>
+        <div class="preset-list" id="textPresets"></div>
+      </section>
+
+      <section class="tabpane" data-pane="ready" hidden>
+        <p class="muted small">خلفيات جاهزة تجرب بيها المحرر من غير ما ترفع ملفات.</p>
+        <div class="preset-list" id="gradPresets"></div>
+      </section>
+    </aside>
+
+    <!-- المعاينة -->
+    <section class="preview">
+      <div class="stage-wrap"><canvas id="stage" width="1280" height="720"></canvas></div>
+      <div class="transport">
+        <button id="toStart" class="ibtn" title="للبداية (Home)">⏮</button>
+        <button id="playBtn" class="ibtn big" title="تشغيل / إيقاف (Space)">▶</button>
+        <span id="timeLabel" class="time">00:00.0 / 00:00.0</span>
+      </div>
+    </section>
+
+    <!-- الخصائص -->
+    <aside class="panel inspector-panel">
+      <div class="panel-title">الخصائص</div>
+      <div id="inspector"></div>
+    </aside>
+  </div>
+
+  <!-- التايم لاين -->
+  <section class="timeline-panel">
+    <div class="tl-toolbar">
+      <button id="splitBtn" class="tbtn" title="قسّم عند المؤشر (S)">✂ قسّم</button>
+      <button id="dupBtn" class="tbtn" title="نسخ المقطع (Ctrl+D)">⧉ كرر</button>
+      <button id="delBtn" class="tbtn danger" title="حذف (Delete)">🗑 احذف</button>
+      <span class="spacer"></span>
+      <label class="snap"><input type="checkbox" id="snapChk" checked> مغناطيس</label>
+      <label class="zoom">🔍 <input type="range" id="zoom" min="20" max="200" step="5" value="60" aria-label="تكبير التايم لاين"></label>
+    </div>
+    <div class="tl-wrap">
+      <div id="tlLabels" class="tl-labels"></div>
+      <div id="tlScroll" class="tl-scroll"></div>
+    </div>
+  </section>
+</div>
+
+<!-- نافذة التصدير -->
+<div id="exportModal" class="modal" hidden>
+  <div class="modal-box">
+    <h3>جاري تصدير الفيديو…</h3>
+    <div class="bar"><i id="expBar"></i></div>
+    <p id="expPct" class="muted">0%</p>
+    <p class="muted small">التصدير بيشتغل بنفس مدة الفيديو (٣٠ ثانية فيديو = ٣٠ ثانية تصدير). سيب التبويب ده ظاهر قدامك ومتروحش لتبويب تاني، وإلا ممكن الفيديو يطلع بيهنج.</p>
+    <button id="expCancel" class="tbtn danger">إلغاء</button>
+  </div>
+</div>
+
+<div id="dropHint" class="drop-hint" hidden>سيب الملفات هنا لاستيرادها</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="js/store.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

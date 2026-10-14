@@ -1,0 +1,10 @@
+{
+  "name": "cutly-video-editor",
+  "version": "1.0.0",
+  "description": "محرر فيديو عربي بيشتغل في المتصفح (قص، نصوص، فلاتر، تصدير)",
+  "private": true,
+  "scripts": {
+    "test": "node tests/store.test.js",
+    "test:e2e": "python3 tests/e2e.py"
+  }
+}
